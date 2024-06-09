@@ -1,36 +1,26 @@
 using System.Text;
 using System.Text.Json;
 using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Configs;
-using BenchmarkDotNet.Environments;
 using BenchmarkDotNet.Jobs;
 
-namespace BenchmarkJson.Benchmarks.NativeAot;
+namespace BenchmarkJsonAot.Benchmarks.NativeAot;
 
-[Config(typeof(Config))]
 [MemoryDiagnoser]
+[SimpleJob(RuntimeMoniker.NativeAot80)]
 public class NativeAotDeserialize
 {
+    private readonly byte[] _testJsonUtf8 = Encoding.UTF8.GetBytes(TestJson);
+
     private const string TestJson =
         """[{"ScreenX":30,"ScreenY":30,"RawX":552,"RawY":514},{"ScreenX":290,"ScreenY":210,"RawX":3341,"RawY":3353}]""";
 
-    private readonly byte[] _testJsonUtf8 = Encoding.UTF8.GetBytes(TestJson);
-
-    private static readonly byte[] ScreenXUtf8 = Encoding.UTF8.GetBytes("ScreenX");
-    private static readonly byte[] ScreenYUtf8 = Encoding.UTF8.GetBytes("ScreenY");
-    private static readonly byte[] RawXUtf8 = Encoding.UTF8.GetBytes("RawX");
-    private static readonly byte[] RawYUtf8 = Encoding.UTF8.GetBytes("RawY");
+    private static readonly byte[] ScreenXUtf8 = "ScreenX"u8.ToArray();
+    private static readonly byte[] ScreenYUtf8 = "ScreenY"u8.ToArray();
+    private static readonly byte[] RawXUtf8 = "RawX"u8.ToArray();
+    private static readonly byte[] RawYUtf8 = "RawY"u8.ToArray();
 
 
-#if IS_NATIVE_AOT
     [Benchmark(Baseline = true)]
-    public CalibrationPoint[]? Deserialize()
-    {
-        return JsonSerializer.Deserialize<CalibrationPoint[]>(TestJson);
-    }
-#endif
-
-    [Benchmark]
     public CalibrationPoint[]? DeserializeAot()
     {
         return JsonSerializer.Deserialize(TestJson, NativeAotSourceGenerationContext.Default.CalibrationPointArray);
@@ -81,18 +71,5 @@ public class NativeAotDeserialize
         }
 
         return list.ToArray();
-    }
-
-    private class Config : ManualConfig
-    {
-        public Config()
-        {
-            AddJob(Job.Default
-                .WithRuntime(CoreRuntime.Core80)
-            );
-            AddJob(Job.Default
-                .WithRuntime(NativeAotRuntime.Net80)
-            );
-        }
     }
 }

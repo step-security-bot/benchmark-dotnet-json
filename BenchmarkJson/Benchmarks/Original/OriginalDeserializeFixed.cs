@@ -1,14 +1,11 @@
 using System.Collections;
 using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Configs;
-using BenchmarkDotNet.Environments;
-using BenchmarkDotNet.Jobs;
 using Newtonsoft.Json;
 using JsonSerializer = SimpleJsonSerializer.JsonSerializer;
 
 namespace BenchmarkJson.Benchmarks.Original;
 
-[Config(typeof(Config))]
+[SimpleJob]
 [MemoryDiagnoser]
 public class OriginalDeserializeFixed
 {
@@ -31,7 +28,7 @@ public class OriginalDeserializeFixed
                 ScreenX = Convert.ToInt32(props["ScreenX"]),
                 ScreenY = Convert.ToInt32(props["ScreenY"]),
                 RawX = Convert.ToInt32(props["RawX"]),
-                RawY = Convert.ToInt32(props["RawY"])
+                RawY = Convert.ToInt32(props["RawY"]),
             });
         }
 
@@ -73,7 +70,7 @@ public class OriginalDeserializeFixed
                 ScreenX = GetPropertyValue(node, "ScreenX").GetValueOrDefault(),
                 ScreenY = GetPropertyValue(node, "ScreenY").GetValueOrDefault(),
                 RawX = GetPropertyValue(node, "RawX").GetValueOrDefault(),
-                RawY = GetPropertyValue(node, "RawY").GetValueOrDefault()
+                RawY = GetPropertyValue(node, "RawY").GetValueOrDefault(),
             });
             index = nodeEnd;
         }
@@ -96,16 +93,6 @@ public class OriginalDeserializeFixed
 
             int valueEnd = node.IndexOfAny([',', ' ', '}'], valueStart);
             return int.Parse(node.Substring(valueStart, valueEnd - valueStart));
-        }
-    }
-
-    private class Config : ManualConfig
-    {
-        public Config()
-        {
-            AddJob(Job.Default
-                .WithRuntime(CoreRuntime.Core80)
-            );
         }
     }
 }

@@ -1,12 +1,10 @@
 using System.Text.Json;
 using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Configs;
-using BenchmarkDotNet.Environments;
 using BenchmarkDotNet.Jobs;
 
-namespace BenchmarkJson.Benchmarks.NativeAot;
+namespace BenchmarkJsonAot.Benchmarks.NativeAot;
 
-[Config(typeof(Config))]
+[SimpleJob(RuntimeMoniker.NativeAot80)]
 [MemoryDiagnoser]
 public class NativeAotSerialize
 {
@@ -16,15 +14,8 @@ public class NativeAotSerialize
         new CalibrationPoint(290, 210, 3341, 3353),
     ];
 
-#if IS_NATIVE_AOT
-    [Benchmark(Baseline = true)]
-    public string Serialize()
-    {
-        return JsonSerializer.Serialize(TestPoints);
-    }
-#endif
 
-    [Benchmark]
+    [Benchmark(Baseline = true)]
     public string SerializeAot()
     {
         return JsonSerializer.Serialize(TestPoints, NativeAotSourceGenerationContext.Default.CalibrationPointArray);
@@ -33,7 +24,6 @@ public class NativeAotSerialize
     [Benchmark]
     public byte[] SerializeUtf8Writer()
     {
-
         using var stream = new MemoryStream();
         using var writer = new Utf8JsonWriter(stream);
         writer.WriteStartArray();
@@ -46,21 +36,9 @@ public class NativeAotSerialize
             writer.WriteNumber("RawY", point.RawY);
             writer.WriteEndObject();
         }
+
         writer.WriteEndArray();
         writer.Flush();
         return stream.ToArray();
-    }
-
-    private class Config : ManualConfig
-    {
-        public Config()
-        {
-            AddJob(Job.Default
-                .WithRuntime(CoreRuntime.Core80)
-            );
-            AddJob(Job.Default
-                .WithRuntime(NativeAotRuntime.Net80)
-            );
-        }
     }
 }

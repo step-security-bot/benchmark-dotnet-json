@@ -57,7 +57,7 @@ public static class Original
                 ScreenX = Convert.ToInt32(props["ScreenX"]),
                 ScreenY = Convert.ToInt32(props["ScreenY"]),
                 RawX = Convert.ToInt32(props["RawX"]),
-                RawY = Convert.ToInt32(props["RawY"])
+                RawY = Convert.ToInt32(props["RawY"]),
             });
         }
 
@@ -183,7 +183,7 @@ public static class Original
                 ScreenX = GetPropertyValue(node, "ScreenX").Value,
                 ScreenY = GetPropertyValue(node, "ScreenY").Value,
                 RawX = GetPropertyValue(node, "RawX").Value,
-                RawY = GetPropertyValue(node, "RawY").Value
+                RawY = GetPropertyValue(node, "RawY").Value,
             });
             index = nodeEnd;
         }

@@ -1,14 +1,11 @@
 using System.Text;
 using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Configs;
-using BenchmarkDotNet.Environments;
-using BenchmarkDotNet.Jobs;
 using Newtonsoft.Json;
 using JsonSerializer = SimpleJsonSerializer.JsonSerializer;
 
 namespace BenchmarkJson.Benchmarks.Original;
 
-[Config(typeof(Config))]
+[SimpleJob]
 [MemoryDiagnoser]
 public class OriginalSerializeFixed
 {
@@ -48,15 +45,5 @@ public class OriginalSerializeFixed
 
         sb.Append(']');
         return sb.ToString();
-    }
-
-    private class Config : ManualConfig
-    {
-        public Config()
-        {
-            AddJob(Job.Default
-                .WithRuntime(CoreRuntime.Core80)
-            );
-        }
     }
 }

@@ -4,3 +4,9 @@
     build:
       context: .
       dockerfile: BenchmarkJson/Dockerfile
+
+  benchmarkjsonaot:
+    image: benchmarkjsonaot
+    build:
+      context: .
+      dockerfile: BenchmarkJsonAot/Dockerfile
