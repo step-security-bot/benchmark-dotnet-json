@@ -6,7 +6,7 @@
         <LangVersion>12</LangVersion>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <PublishAot>true</PublishAot>
+<!--        <PublishAot>true</PublishAot>-->
         <InvariantGlobalization>true</InvariantGlobalization>
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
         <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
@@ -20,6 +20,8 @@
 
     <ItemGroup>
       <PackageReference Include="BenchmarkDotNet" Version="0.13.12" />
+      <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+      <PackageReference Include="SimpleJsonSerializer" Version="0.2.1" />
     </ItemGroup>
 
 </Project>

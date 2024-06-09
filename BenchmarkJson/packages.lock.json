@@ -20,17 +20,17 @@
           "System.Management": "5.0.0"
         }
       },
-      "Microsoft.DotNet.ILCompiler": {
+      "Newtonsoft.Json": {
         "type": "Direct",
-        "requested": "[8.0.5, )",
-        "resolved": "8.0.5",
-        "contentHash": "tfdncRQLXNpATB4Ykj11O5+fbkBAHoeLi6XfyxAWmilU4rwC3apT612RIuhqB6tBGE69G7Dl1g7HeydsH3Wz1w=="
+        "requested": "[13.0.3, )",
+        "resolved": "13.0.3",
+        "contentHash": "HrC5BXdl00IP9zeV+0Z848QWPAoCr9P3bDEZguI+gkLcBKAOxix/tLEAAHC+UvDNPv4a2d18lOReHMOagPa+zQ=="
       },
-      "Microsoft.NET.ILLink.Tasks": {
+      "SimpleJsonSerializer": {
         "type": "Direct",
-        "requested": "[8.0.5, )",
-        "resolved": "8.0.5",
-        "contentHash": "4ISW1Ndgz86FkIbu5rVlMqhhtojdy5rUlxC/N+9kPh9qbYcvHiCvYbHKzAPVIx9OPYIjT9trXt7JI42Y5Ukq6A=="
+        "requested": "[0.2.1, )",
+        "resolved": "0.2.1",
+        "contentHash": "1FI/rsWhfiQt+Z6jeyhrBjlPGoYcaGEeqZg2OJvlpKp454U/ixy1jyOEpumX0K1cfW8f98N29ozH/ElmzQd6Hg=="
       },
       "BenchmarkDotNet.Annotations": {
         "type": "Transitive",
