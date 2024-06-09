@@ -7,39 +7,33 @@ using BenchmarkDotNet.Jobs;
 
 namespace BenchmarkJson.Benchmarks.NativeAot;
 
+[Config(typeof(Config))]
+[MemoryDiagnoser]
 public class NativeAotDeserialize
 {
     private const string TestJson =
         """[{"ScreenX":30,"ScreenY":30,"RawX":552,"RawY":514},{"ScreenX":290,"ScreenY":210,"RawX":3341,"RawY":3353}]""";
 
     private readonly byte[] _testJsonUtf8 = Encoding.UTF8.GetBytes(TestJson);
-    private JsonSerializerOptions _options = null!;
 
     private static readonly byte[] ScreenXUtf8 = Encoding.UTF8.GetBytes("ScreenX");
     private static readonly byte[] ScreenYUtf8 = Encoding.UTF8.GetBytes("ScreenY");
     private static readonly byte[] RawXUtf8 = Encoding.UTF8.GetBytes("RawX");
     private static readonly byte[] RawYUtf8 = Encoding.UTF8.GetBytes("RawY");
 
-    [GlobalSetup]
-    public void Setup()
-    {
-        _options = new JsonSerializerOptions
-        {
-            TypeInfoResolver = NativeAotSourceGenerationContext.Default,
-        };
-        _options.MakeReadOnly();
-    }
 
+#if IS_NATIVE_AOT
     [Benchmark(Baseline = true)]
     public CalibrationPoint[]? Deserialize()
     {
         return JsonSerializer.Deserialize<CalibrationPoint[]>(TestJson);
     }
+#endif
 
     [Benchmark]
     public CalibrationPoint[]? DeserializeAot()
     {
-        return JsonSerializer.Deserialize<CalibrationPoint[]>(TestJson, _options);
+        return JsonSerializer.Deserialize(TestJson, NativeAotSourceGenerationContext.Default.CalibrationPointArray);
     }
 
     [Benchmark]

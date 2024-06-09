@@ -10,34 +10,24 @@ namespace BenchmarkJson.Benchmarks.NativeAot;
 [MemoryDiagnoser]
 public class NativeAotSerialize
 {
-    private JsonSerializerOptions _options = null!;
-
     private static readonly CalibrationPoint[] TestPoints =
     [
         new CalibrationPoint(30, 30, 552, 514),
         new CalibrationPoint(290, 210, 3341, 3353),
     ];
 
-    [GlobalSetup]
-    public void Setup()
-    {
-        _options = new JsonSerializerOptions
-        {
-            TypeInfoResolver = NativeAotSourceGenerationContext.Default,
-        };
-        _options.MakeReadOnly();
-    }
-
+#if IS_NATIVE_AOT
     [Benchmark(Baseline = true)]
     public string Serialize()
     {
         return JsonSerializer.Serialize(TestPoints);
     }
+#endif
 
     [Benchmark]
     public string SerializeAot()
     {
-        return JsonSerializer.Serialize(TestPoints, _options);
+        return JsonSerializer.Serialize(TestPoints, NativeAotSourceGenerationContext.Default.CalibrationPointArray);
     }
 
     [Benchmark]
