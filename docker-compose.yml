@@ -1,0 +1,6 @@
+﻿services:
+  benchmarkjson:
+    image: benchmarkjson
+    build:
+      context: .
+      dockerfile: BenchmarkJson/Dockerfile
