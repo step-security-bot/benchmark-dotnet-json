@@ -29,14 +29,7 @@ dotnet run --project BenchmarkJson -c Release -- --filter *Original*
 I am unfortunately not able to test this on embedded systems, however his findings were that the original difference between the approaches was relatively the same on all platforms. With the F7 being slower in general.
 
 My results - unsurprisingly - are not even close to what OP measured on X64.
-```
-BenchmarkDotNet v0.13.12, Windows 11 (10.0.22621.3593/22H2/2022Update/SunValley2)
-AMD Ryzen 7 3700X, 1 CPU, 16 logical and 8 physical cores
-.NET SDK 8.0.300
-  [Host]     : .NET 8.0.5 (8.0.524.21615), X64 RyuJIT AVX2
-  Job-ESIKYW : .NET 8.0.5 (8.0.524.21615), X64 RyuJIT AVX2
-Runtime=.NET 8.0  
-```
+
 | Method                        | Mean       | Error    | StdDev   | Ratio | RatioSD | Gen0   | Gen1   | Allocated | Alloc Ratio |
 |------------------------------ |-----------:|---------:|---------:|------:|--------:|-------:|-------:|----------:|------------:|
 | SimpleJsonDeserializeTest     | 6,900.4 ns | 19.34 ns | 17.14 ns | 15.10 |    0.20 | 0.4044 |      - |    3432 B |        3.61 |
@@ -61,14 +54,7 @@ dotnet run --project BenchmarkJson -c Release -- --filter *HighPerformance*
 dotnet run --project BenchmarkJsonAot -c Release -- --filter *NativeAot*
 ```
 Using the high performance options of `System.Text.Json` and `Utf8JsonWriter/Reader`, the results are:
-```
-BenchmarkDotNet v0.13.12, Windows 11 (10.0.22621.3593/22H2/2022Update/SunValley2)
-AMD Ryzen 7 3700X, 1 CPU, 16 logical and 8 physical cores
-.NET SDK 8.0.300
-  [Host]     : .NET 8.0.5 (8.0.524.21615), X64 RyuJIT AVX2
-  Job-FTOAFU : .NET 8.0.5 (8.0.524.21615), X64 RyuJIT AVX2
-Runtime=.NET 8.0  
-```
+
 | Method                | Mean       | Error    | StdDev   | Ratio | Gen0   | Allocated | Alloc Ratio |
 |---------------------- |-----------:|---------:|---------:|------:|-------:|----------:|------------:|
 | Deserialize           | 1,006.2 ns | 10.97 ns | 10.26 ns |  1.00 | 0.0744 |     632 B |        1.00 |
@@ -82,4 +68,6 @@ Runtime=.NET 8.0
 | SerializeUtf8Writer | 397.2 ns | 5.19 ns | 4.85 ns |  0.90 | 0.1087 |     912 B |        1.68 |
 
 The `SerializeUtf8Writer` is probably slower because of the `ToArray()` call on the memory stream. Ideally we would write to a file directly.
-However, we can clearly see that the `SerializeAot` is comparable to `ManualSerializeTest` however it uses much less memory. The same is true for `DeserializeUtf8Reader`, however this too uses much less memory. However being very brittle, I would personally try to go for SourceGeneration deserialization, considering how little *boilerplate* code is needed on the developer side, for easy performance gains, even IF it is slower than hand rolling deserialization.
+However, we can clearly see that the `SerializeAot` is comparable to `ManualSerializeTest` however it uses much less memory. The same is true for `DeserializeUtf8Reader`, however this too uses much less memory. However, being very brittle, I would personally try to go for SourceGeneration deserialization, considering how little *boilerplate* code is needed on the developer side, for easy performance gains, even IF it is slower than hand rolling deserialization.
+
+What the original video failed to recognize is that all the libraries used are using `reflection` by default which is known to be slow, and my hypothesis is that it is especially slow on embedded systems. I hope OP tries this benchmark on his devices and makes a follow-up video with the results.
