@@ -6,7 +6,7 @@ using BenchmarkDotNet.Jobs;
 using Newtonsoft.Json;
 using JsonSerializer = SimpleJsonSerializer.JsonSerializer;
 
-namespace BenchmarkJson.Benchmarks;
+namespace BenchmarkJson.Benchmarks.Original;
 
 [Config(typeof(Config))]
 [MemoryDiagnoser]
@@ -55,7 +55,6 @@ public class OriginalSerializeFixed
         public Config()
         {
             AddJob(Job.Default
-                .WithRuntime(ClrRuntime.Net481)
                 .WithRuntime(CoreRuntime.Core80)
             );
         }

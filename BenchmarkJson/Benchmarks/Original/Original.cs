@@ -4,7 +4,7 @@ using System.Text;
 using Newtonsoft.Json;
 using JsonSerializer = SimpleJsonSerializer.JsonSerializer;
 
-namespace BenchmarkJson.Benchmarks;
+namespace BenchmarkJson.Benchmarks.Original;
 
 public static class Original
 {
