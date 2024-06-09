@@ -1,6 +1,6 @@
 # Json serialization benchmarks
 
-This repository is in response of [Serializers in IoT: Json.NET and System.Text.Json are Both Terrible!](https://youtu.be/ZkqcNQifSgI) video by @yoshimoshi-garage
+This repository is in response of [Serializers in IoT: Json.NET and System.Text.Json are Both Terrible!](https://youtu.be/ZkqcNQifSgI) video by [@yoshimoshi-garage](https://github.com/yoshimoshi-garage)
 
 I believe that his benchmarks in the video are not fair, nor valid, because he didn't actually benchmark the libraries or implementations.
 For a readout of what are the pitfalls of rolling your own benchmarks, you can visit the [BenchmarkDotNet website](https://benchmarkdotnet.org/index.html#reliability).
