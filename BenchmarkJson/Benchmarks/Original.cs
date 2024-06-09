@@ -1,7 +1,8 @@
 using System.Collections;
 using System.Diagnostics;
 using System.Text;
-using System.Text.Json;
+using Newtonsoft.Json;
+using JsonSerializer = SimpleJsonSerializer.JsonSerializer;
 
 namespace BenchmarkJson.Benchmarks;
 
@@ -10,7 +11,7 @@ public static class Original
     private const string testJson =
         """[{"ScreenX":30,"ScreenY":30,"RawX":552,"RawY":514},{"ScreenX":290,"ScreenY":210,"RawX":3341,"RawY":3353}]""";
 
-    private static CalibrationPoint[] testPoints =
+    private static readonly CalibrationPoint[] testPoints =
         [new CalibrationPoint(30, 30, 552, 514), new CalibrationPoint(290, 210, 3341, 3353)];
 
     // This method of benchmarking is DEEPLY flawed
@@ -30,22 +31,23 @@ public static class Original
     // unnecessary async void + async void + L + ratio
     public static async void SimpleJsonSerializeTest()
     {
-        var start = GC.GetTotalMemory(false);
+        long start = GC.GetTotalMemory(false);
         var sw = Stopwatch.StartNew();
-        string? json = SimpleJsonSerializer.JsonSerializer.SerializeObject(testPoints);
+        string? json = JsonSerializer.SerializeObject(testPoints);
         sw.Stop();
         TimeSpan serializeTime = sw.Elapsed;
         long end = GC.GetTotalMemory(false);
         Console.WriteLine($"SimpleJsonSerializeTest: {end - start} bytes, {serializeTime.TotalMilliseconds} ms");
     }
+
     public static async void SimpleJsonDeserializeTest()
     {
         long start = GC.GetTotalMemory(false);
         var sw = Stopwatch.StartNew();
-        object? o = SimpleJsonSerializer.JsonSerializer.DeserializeString(testJson);
+        object? o = JsonSerializer.DeserializeString(testJson);
         var list = new List<CalibrationPoint>();
         // null dereference
-        foreach (var node in o as ArrayList)
+        foreach (object? node in o as ArrayList)
         {
             var props = node as Hashtable;
 
@@ -58,6 +60,7 @@ public static class Original
                 RawY = Convert.ToInt32(props["RawY"])
             });
         }
+
         var data = list.ToArray();
         sw.Stop();
         TimeSpan deserializeTime = sw.Elapsed;
@@ -67,10 +70,10 @@ public static class Original
 
     public static async void NewtonsoftJsonSerializeTest()
     {
-        var start = GC.GetTotalMemory(false);
+        long start = GC.GetTotalMemory(false);
         var sw = Stopwatch.StartNew();
         // unused variable falls into dead code elimination
-        var json = Newtonsoft.Json.JsonConvert.SerializeObject(testPoints);
+        string json = JsonConvert.SerializeObject(testPoints);
         sw.Stop();
         TimeSpan serializeTime = sw.Elapsed;
         long end = GC.GetTotalMemory(false);
@@ -79,22 +82,23 @@ public static class Original
 
     public static async void NewtonsoftJsonDeserializeTest()
     {
-        var start = GC.GetTotalMemory(false);
+        long start = GC.GetTotalMemory(false);
         var sw = Stopwatch.StartNew();
         // unused variable falls into dead code elimination
-        var data = Newtonsoft.Json.JsonConvert.DeserializeObject<CalibrationPoint[]>(testJson);
+        var data = JsonConvert.DeserializeObject<CalibrationPoint[]>(testJson);
         sw.Stop();
         TimeSpan deserializeTime = sw.Elapsed;
         long end = GC.GetTotalMemory(false);
-        Console.WriteLine($"NewtonsoftJsonDeserializeTest: {end - start} bytes, {deserializeTime.TotalMilliseconds} ms");
+        Console.WriteLine(
+            $"NewtonsoftJsonDeserializeTest: {end - start} bytes, {deserializeTime.TotalMilliseconds} ms");
     }
 
     public static async void SystemTextJsonSerializeTest()
     {
-        var start = GC.GetTotalMemory(false);
+        long start = GC.GetTotalMemory(false);
         var sw = Stopwatch.StartNew();
         // unused variable falls into dead code elimination
-        var json = JsonSerializer.Serialize(testPoints);
+        string json = System.Text.Json.JsonSerializer.Serialize(testPoints);
         sw.Stop();
         TimeSpan serializeTime = sw.Elapsed;
         long end = GC.GetTotalMemory(false);
@@ -103,14 +107,15 @@ public static class Original
 
     public static async void SystemTextJsonDeserializeTest()
     {
-        var start = GC.GetTotalMemory(false);
+        long start = GC.GetTotalMemory(false);
         var sw = Stopwatch.StartNew();
         // unused variable falls into dead code elimination
-        var data = JsonSerializer.Deserialize<CalibrationPoint[]>(testJson);
+        var data = System.Text.Json.JsonSerializer.Deserialize<CalibrationPoint[]>(testJson);
         sw.Stop();
         TimeSpan deserializeTime = sw.Elapsed;
         long end = GC.GetTotalMemory(false);
-        Console.WriteLine($"SystemTextJsonDeserializeTest: {end - start} bytes, {deserializeTime.TotalMilliseconds} ms");
+        Console.WriteLine(
+            $"SystemTextJsonDeserializeTest: {end - start} bytes, {deserializeTime.TotalMilliseconds} ms");
     }
 
     private static void ManualSerializeTest()
@@ -118,7 +123,7 @@ public static class Original
         long start = GC.GetTotalMemory(false);
         var sw = Stopwatch.StartNew();
         var sb = new StringBuilder("[");
-        foreach (var point in testPoints)
+        foreach (CalibrationPoint point in testPoints)
         {
             // this creates invalid JSON, because of the trailing comma
             sb.Append(
@@ -126,7 +131,7 @@ public static class Original
         }
 
         sb.Append(']');
-        var json = sb.ToString();
+        string json = sb.ToString();
         // sic, missing Stopwatch.Stop()
         //sw.Stop();
         TimeSpan serializeTime = sw.Elapsed;
@@ -136,7 +141,7 @@ public static class Original
 
     public static void ManualDeserializeTest()
     {
-        var start = GC.GetTotalMemory(false);
+        long start = GC.GetTotalMemory(false);
         var sw = Stopwatch.StartNew();
         var list = new List<CalibrationPoint>();
 
@@ -156,7 +161,7 @@ public static class Original
             }
 
             // easy win of collection expression using Span is missed here, starting with .NET9/C#13
-            int valueEnd = node.IndexOfAny(new char[] { ',', ' ', '}' }, valueStart);
+            int valueEnd = node.IndexOfAny(new[] { ',', ' ', '}' }, valueStart);
             return int.Parse(node.Substring(valueStart, valueEnd - valueStart));
         }
 
@@ -178,7 +183,7 @@ public static class Original
                 ScreenX = GetPropertyValue(node, "ScreenX").Value,
                 ScreenY = GetPropertyValue(node, "ScreenY").Value,
                 RawX = GetPropertyValue(node, "RawX").Value,
-                RawY = GetPropertyValue(node, "RawY").Value,
+                RawY = GetPropertyValue(node, "RawY").Value
             });
             index = nodeEnd;
         }
