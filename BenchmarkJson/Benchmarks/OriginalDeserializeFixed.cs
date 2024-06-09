@@ -1,7 +1,7 @@
 using System.Collections;
-using System.Text;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Configs;
+using BenchmarkDotNet.Environments;
 using BenchmarkDotNet.Jobs;
 using Newtonsoft.Json;
 using JsonSerializer = SimpleJsonSerializer.JsonSerializer;
@@ -10,19 +10,10 @@ namespace BenchmarkJson.Benchmarks;
 
 [Config(typeof(Config))]
 [MemoryDiagnoser]
-public class OriginalFixed
+public class OriginalDeserializeFixed
 {
     private const string TestJson =
         """[{"ScreenX":30,"ScreenY":30,"RawX":552,"RawY":514},{"ScreenX":290,"ScreenY":210,"RawX":3341,"RawY":3353}]""";
-
-    private static readonly CalibrationPoint[] TestPoints =
-        [new CalibrationPoint(30, 30, 552, 514), new CalibrationPoint(290, 210, 3341, 3353)];
-
-    [Benchmark]
-    public string SimpleJsonSerializeTest()
-    {
-        return JsonSerializer.SerializeObject(TestPoints);
-    }
 
     [Benchmark]
     public CalibrationPoint[] SimpleJsonDeserializeTest()
@@ -48,21 +39,9 @@ public class OriginalFixed
     }
 
     [Benchmark]
-    public string NewtonsoftJsonSerializeTest()
-    {
-        return JsonConvert.SerializeObject(TestPoints);
-    }
-
-    [Benchmark]
     public CalibrationPoint[]? NewtonsoftJsonDeserializeTest()
     {
         return JsonConvert.DeserializeObject<CalibrationPoint[]>(TestJson);
-    }
-
-    [Benchmark]
-    public string SystemTextJsonSerializeTest()
-    {
-        return System.Text.Json.JsonSerializer.Serialize(TestPoints);
     }
 
     [Benchmark]
@@ -71,45 +50,10 @@ public class OriginalFixed
         return System.Text.Json.JsonSerializer.Deserialize<CalibrationPoint[]>(TestJson);
     }
 
-    [Benchmark]
-    public string ManualSerializeTest()
-    {
-        var sb = new StringBuilder("[");
-        foreach (CalibrationPoint point in TestPoints)
-        {
-            // this creates invalid JSON, because of the trailing comma
-            sb.Append(
-                $"{{\"ScreenX\":{point.ScreenX},\"ScreenY\":{point.ScreenY},\"RawX\":{point.RawX},\"RawY\":{point.RawY}}},");
-        }
-
-        sb.Remove(sb.Length - 1, 1);
-
-        sb.Append(']');
-        return sb.ToString();
-    }
-
-    [Benchmark]
+    [Benchmark(Baseline = true)]
     public CalibrationPoint[] ManualDeserializeTest()
     {
         var list = new List<CalibrationPoint>();
-
-        int? GetPropertyValue(string node, string name)
-        {
-            int nameStart = node.IndexOf(name, StringComparison.Ordinal);
-            if (nameStart < 0)
-            {
-                return null;
-            }
-
-            int valueStart = node.IndexOf(':', nameStart) + 1;
-            if (valueStart < 0)
-            {
-                return null;
-            }
-
-            int valueEnd = node.IndexOfAny([',', ' ', '}'], valueStart);
-            return int.Parse(node.Substring(valueStart, valueEnd - valueStart));
-        }
 
         int index = 0;
         while (index < TestJson.Length)
@@ -135,13 +79,34 @@ public class OriginalFixed
         }
 
         return list.ToArray();
+
+        int? GetPropertyValue(string node, string name)
+        {
+            int nameStart = node.IndexOf(name, StringComparison.Ordinal);
+            if (nameStart < 0)
+            {
+                return null;
+            }
+
+            int valueStart = node.IndexOf(':', nameStart) + 1;
+            if (valueStart < 0)
+            {
+                return null;
+            }
+
+            int valueEnd = node.IndexOfAny([',', ' ', '}'], valueStart);
+            return int.Parse(node.Substring(valueStart, valueEnd - valueStart));
+        }
     }
 
     private class Config : ManualConfig
     {
         public Config()
         {
-            AddJob(Job.Default);
+            AddJob(Job.Default
+                .WithRuntime(ClrRuntime.Net481)
+                .WithRuntime(CoreRuntime.Core80)
+            );
         }
     }
 }
