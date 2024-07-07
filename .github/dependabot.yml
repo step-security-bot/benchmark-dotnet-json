@@ -1,0 +1,21 @@
+version: 2
+updates:
+  - package-ecosystem: nuget
+    directory: /BenchmarkJson
+    schedule:
+      interval: daily
+
+  - package-ecosystem: docker
+    directory: /BenchmarkJson
+    schedule:
+      interval: daily
+
+  - package-ecosystem: nuget
+    directory: /BenchmarkJsonAot
+    schedule:
+      interval: daily
+
+  - package-ecosystem: docker
+    directory: /BenchmarkJsonAot
+    schedule:
+      interval: daily
